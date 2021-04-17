@@ -1,0 +1,37 @@
+.slot-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.slot-base {
+    height: 40px;
+    margin: 5px;
+    padding-top: 20px;
+    border-radius: 5px;
+
+    width: 22%;
+    font-size: large;
+}
+
+.slot {
+    composes: slot-base;
+    cursor: pointer;
+    background-color: lightgreen;
+    transition: background-color 0.2s;
+}
+
+.slot:hover {
+    background-color: limegreen;
+}
+
+.free-slot {
+    composes: slot-base;
+    background-color: gray;
+}
+
+.final-slot {
+    composes: slot-base;
+    background: orange;
+    opacity: 0.7;
+}

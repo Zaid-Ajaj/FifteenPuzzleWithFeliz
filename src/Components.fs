@@ -64,6 +64,7 @@ type Components =
     static member FifteenPuzzle() =
         let (gameStared, setGameStarted) = React.useState(false)
         let (appState, setAppState) = React.useStateWithUpdater(FifteenPuzzle.initialState())
+        let stylesheet = FifteenPuzzle.stylesheet
         Html.div [
             prop.style [ style.textAlign.center ]
             prop.children [
@@ -76,30 +77,30 @@ type Components =
                 else
                     // game
                     Html.div [
-                        prop.style [
-                            style.display.flex
-                            style.flexWrap.wrap
-                            style.padding 20
-                        ]
-
+                        prop.className stylesheet.["slot-container"]
                         prop.children [
                             for (position, tag) in appState.Slots do
                             Html.div [
                                 prop.text (if position = appState.FreePos then "" else tag)
-                                prop.onClick (fun _ -> setAppState(fun prevState -> FifteenPuzzle.slotSelected prevState position tag))
-                                prop.style [
-                                    style.width (length.perc 22)
-                                    style.height 40
-                                    style.backgroundColor.lightGreen
-                                    style.margin 5
-                                    style.paddingTop 10
-                                    style.borderRadius 15
-                                    style.cursor.pointer
+                                prop.onClick (fun _ ->
+                                    setAppState(fun prevState ->
+                                        if FifteenPuzzle.canMove prevState position
+                                        then FifteenPuzzle.slotSelected prevState position tag
+                                        else prevState
+                                    )
+                                )
+                                prop.className [
                                     if position = appState.FreePos
-                                    then style.backgroundColor.lightGray
+                                    then stylesheet.["free-slot"]
+                                    else if FifteenPuzzle.inFinalPosition position tag
+                                    then stylesheet.["final-slot"]
+                                    else  stylesheet.["slot"]
                                 ]
                             ]
                         ]
                     ]
+
+                    if FifteenPuzzle.gameFinished appState
+                    then Html.p "YOU WIN!"
             ]
         ]
