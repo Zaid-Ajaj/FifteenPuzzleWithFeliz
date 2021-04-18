@@ -8,30 +8,34 @@ type Slot = Position * string
 
 let [<Literal>] RowCount = 4
 let [<Literal>] RowLength = 4
-let FreeTag = RowCount*RowLength
+let SlotCount = RowCount*RowLength
+let FreeTag = SlotCount
 
-let indexToPosition (index: int) =
-    { Row = index / RowLength; Col = index % RowLength }
-
-let positionToIndex (position: Position) =
-    position.Row*RowLength + position.Col
-
-//type AppState = { Slots : Slot list;  FreePos : Position }
 type AppState = int []
 
-let solvedState = [| 1..FreeTag |]
+let solvedState = [| 1..SlotCount |]
 
 let random = Random()
 
 let initialState() : AppState =
-    Array.sortBy (fun _ -> random.NextDouble()) [|1 .. FreeTag|]
+    Array.sortBy (fun _ -> random.NextDouble()) [|1 .. SlotCount|]
 
 let canMove (state: AppState) (index: int)  =
-    let { Row = x1; Col = y1 } = indexToPosition index
-    let { Row = x2; Col = y2 } = indexToPosition (state |> Array.findIndex ((=) FreeTag))
-    let xDiff = abs (x2 - x1)
-    let yDiff = abs (y2 - y1)
-    xDiff + yDiff <= 1
+    let freeIndex = state |> Array.findIndex ((=) FreeTag)
+    let possibleMoves =
+        [ // Left is only possible if not at the beginning of the row
+          if index%RowLength > 0 
+          then index-1
+          // Right is only possible if not at the end of the row
+          if index%RowLength <> 3 
+          then index+1
+          // Up is only possible if not in the first row
+          if index - RowLength >= 0
+          then index - RowLength
+          // Down is only possible if not in the last row
+          if index + RowLength <= SlotCount
+          then index + RowLength ]
+    List.contains freeIndex possibleMoves
 
 let slotSelected (state:AppState) (index: int) =
     if canMove state index
