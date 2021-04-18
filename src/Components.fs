@@ -79,20 +79,20 @@ type Components =
                     Html.div [
                         prop.className stylesheet.["slot-container"]
                         prop.children [
-                            for (position, tag) in appState.Slots do
+                            for index, tag in appState |> Array.indexed do
                             Html.div [
-                                prop.text (if position = appState.FreePos then "" else tag)
+                                prop.text (if tag = FifteenPuzzle.FreeTag then "" else string tag)
                                 prop.onClick (fun _ ->
                                     setAppState(fun prevState ->
-                                        if FifteenPuzzle.canMove prevState position
-                                        then FifteenPuzzle.slotSelected prevState position tag
+                                        if FifteenPuzzle.canMove prevState index
+                                        then FifteenPuzzle.slotSelected prevState index
                                         else prevState
                                     )
                                 )
                                 prop.className [
-                                    if position = appState.FreePos
+                                    if tag = FifteenPuzzle.FreeTag
                                     then stylesheet.["free-slot"]
-                                    else if FifteenPuzzle.inFinalPosition position tag
+                                    else if FifteenPuzzle.inFinalPosition index tag
                                     then stylesheet.["final-slot"]
                                     else  stylesheet.["slot"]
                                 ]
