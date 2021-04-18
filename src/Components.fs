@@ -79,7 +79,7 @@ type Components =
                     Html.div [
                         prop.className stylesheet.["slot-container"]
                         prop.children [
-                            for index, tag in appState |> Array.indexed do
+                            for index, tag in appState |> List.indexed do
                             Html.div [
                                 prop.text (if tag = FifteenPuzzle.FreeTag then "" else string tag)
                                 prop.onClick (fun _ ->

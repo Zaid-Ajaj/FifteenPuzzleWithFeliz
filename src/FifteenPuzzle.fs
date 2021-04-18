@@ -11,17 +11,17 @@ let [<Literal>] RowLength = 4
 let SlotCount = RowCount*RowLength
 let FreeTag = SlotCount
 
-type AppState = int []
+type AppState = int list
 
-let solvedState = [| 1..SlotCount |]
+let solvedState = [ 1..SlotCount ]
 
 let random = Random()
 
 let initialState() : AppState =
-    Array.sortBy (fun _ -> random.NextDouble()) [|1 .. SlotCount|]
+    List.sortBy (fun _ -> random.NextDouble()) [1 .. SlotCount]
 
 let canMove (state: AppState) (index: int)  =
-    let freeIndex = state |> Array.findIndex ((=) FreeTag)
+    let freeIndex = state |> List.findIndex ((=) FreeTag)
     let possibleMoves =
         [ // Left is only possible if not at the beginning of the row
           if index%RowLength > 0 
@@ -41,10 +41,10 @@ let slotSelected (state:AppState) (index: int) =
     if canMove state index
     then 
         let tag = state.[index]
-        [| for t in state do
+        [ for t in state do
             if t = FreeTag then tag
             elif t = tag then FreeTag
-            else t |]
+            else t ]
     else state
 
 let stylesheet = Stylesheet.load "./fitteen-puzzle.module.css"
