@@ -25,6 +25,21 @@ let initialState() : AppState =
         // return initial state
         { Slots = slots; FreePos = pos }
 
+let finishedState() : AppState =
+    let randomTags = [1 .. 16]
+    // generate slot positions
+    [
+        for x in 0 .. 3 do
+        for y in 0 .. 3 do
+        yield { X = x; Y = y }  ]
+    // give each position a random tag, making it a slot
+    |> List.mapi (fun i pos -> pos, string (List.item i randomTags))
+    |> fun slots ->
+        // find the free slot, it has tag "16"
+        let (pos, _) = Seq.find (fun (p, tag) -> tag = "16") slots
+        // return initial state
+        { Slots = slots; FreePos = pos }
+
 let freePositionTag (state:AppState) =
     state.Slots
     |> List.find (fun (pos, t) -> pos = state.FreePos)

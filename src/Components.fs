@@ -2,6 +2,9 @@ namespace App
 
 open Feliz
 open Feliz.Router
+open System
+open Fable.Core.JS
+open Feliz.UseListener
 
 type Components =
     /// <summary>
@@ -62,19 +65,46 @@ type Components =
 
     [<ReactComponent>]
     static member FifteenPuzzle() =
-        let (gameStared, setGameStarted) = React.useState(false)
+        let (gameStarted, setGameStarted) = React.useState(false)
+        let (timeElapsed, setTimeElapsed) = React.useStateWithUpdater(0)
         let (appState, setAppState) = React.useStateWithUpdater(FifteenPuzzle.initialState())
+        // use a computed value
+        let gameFinished = React.useMemo((fun () -> FifteenPuzzle.gameFinished appState), [| appState |])
+
+        React.useWindowListener.onKeyUp(fun (ev: Browser.Types.KeyboardEvent) ->
+            if (ev.ctrlKey && ev.key = "q")
+            then setAppState(fun _ -> FifteenPuzzle.finishedState())
+        )
+
+        let subscribeToTimer() =
+            // tick when game is on-going
+            let timerId = setInterval (fun _ ->
+                if gameStarted && not gameFinished
+                then setTimeElapsed (fun prevTimeElapsed -> prevTimeElapsed + 1)) 1000
+
+            // return IDisposable with cleanup code
+            { new IDisposable with
+                member this.Dispose() =
+                    clearTimeout(timerId) }
+
+        React.useEffect(subscribeToTimer, [| box gameStarted; box gameFinished |])
+
+        let playAgain() =
+            setAppState(fun _ -> FifteenPuzzle.initialState())
+            setTimeElapsed (fun _ -> 0)
+
         let stylesheet = FifteenPuzzle.stylesheet
         Html.div [
             prop.style [ style.textAlign.center ]
             prop.children [
                 Html.h1 "Fifteen Puzzle"
-                if not gameStared then
+                if not gameStarted then
                     Html.button [
                         prop.text "Start game"
                         prop.onClick(fun _ -> setGameStarted(true))
                     ]
                 else
+                    Html.h3 $"Time elapsed {timeElapsed} second(s)"
                     // game
                     Html.div [
                         prop.className stylesheet.["slot-container"]
@@ -100,7 +130,11 @@ type Components =
                         ]
                     ]
 
-                    if FifteenPuzzle.gameFinished appState
-                    then Html.p "YOU WIN!"
+                    if gameFinished then
+                        Html.p "YOU WIN!"
+                        Html.button [
+                            prop.text "Play again"
+                            prop.onClick (fun _ -> playAgain())
+                        ]
             ]
         ]
